@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Profile Browser</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link type="text/css" rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+        <!-- Bootstrap vertical tabs support -->
+        <link type="text/css" rel="stylesheet" href="./css/bootstrap.vertical-tabs.min.css">
+        <link type="text/css" rel="stylesheet" href="./css/style.css">
+
+    </head>
+    <body>
+    <div class="container">
+        <div class="row text-center">
+            <h1>Profile Browser</h1>
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+            </div>
+            <!-- navigation -->
+            <div class="col-md-2 menu-container">
+                <ul id="menu" class="nav nav-tabs tabs-left hidden-sm hidden-xs">
+                </ul>
+
+            </div>
+
+
+            <!-- actor profiles -->
+            <div id="profile" class="col-md-6 tab-content hidden-xs hidden-sm">
+            </div>
+
+<!-- mobile profiles -->
+            <div id="mobileProfileAccordion" class="panel-group visible-sm visible-xs"></div>
+
+
+            <div class="col-md-2">
+            </div>
+        </div>
+
+
+    </div>
+    <script type="text/javascript" src="./scripts/jquery-2.0.3.min.js"></script>
+    <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="./scripts/handlebars-v1.3.0.js"></script>
+    <script type="text/javascript" src="./scripts/data.js"></script>
+    <script type="text/javascript">
+        // Ideally this should be in separate JS file. I'll put it here just for the sake of this exercise.
+
+        function sortByFirstName(a, b) {
+            var aName = a.firstName.toLowerCase(), bName = b.firstName.toLowerCase();
+            return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+        }
+
+        $(document).ready(function() {
+            var sortedData = data.sort(sortByFirstName),
+                menuSource = $('#menu-tpl').html(),
+                profileSource = $('#profile-tpl').html(),
+                mobileSource = $('#mobile-tpl').html(),
+                menuTemplate = Handlebars.compile(menuSource),
+                profileTemplate = Handlebars.compile(profileSource),
+                mobileTemplate = Handlebars.compile(mobileSource),
+                menuHtml = menuTemplate(sortedData),
+                profileHtml = profileTemplate(sortedData),
+                mobileHtml = mobileTemplate(sortedData);
+
+            $('#menu').append(menuHtml);
+            $('#profile').append(profileHtml);
+            $('#mobileProfileAccordion').append(mobileHtml);
+
+            // need to do manual expand/collapse for mobile
+            // not sure why it does not work by default
+            $('a[data-toggle="collapse"]').click(function(e) {
+                e.preventDefault();
+
+                // find the .panel-collapse element for current active element and activate collapsible panel
+                $(this).closest('.panel-heading').siblings().collapse('toggle');
+
+            });
+
+        });
+    </script>
+    <script id="menu-tpl" type="text/x-handlebars-template">
+        {{#each this}}
+        <li class="{{#if @first}}active{{/if}}">
+            <a href="#actor-{{id}}" data-toggle="tab">{{firstName}} {{lastName}}</a>
+        </li>
+        {{/each}}
+    </script>
+    <script id="profile-tpl" type="text/x-handlebars-template">
+        {{#each this}}
+        <div class="tab-pane fade {{#if @first}}in active{{/if}}" id="actor-{{id}}">
+            <div class="actor-img" style="background-image:url('{{picture}}')"></div>
+            <h3 class="hidden-xs hidden-sm">{{firstName}} {{lastName}}</h3>
+            <p>{{bio}}</p>
+        </div>
+        {{/each}}
+    </script>
+    <script id="mobile-tpl" type="text/x-handlebars-template">
+    {{#each this}}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#mobileProfileAccordion" href="#actor-{{id}}">
+                    {{firstName}} {{lastName}}
+                    </a>
+                </h4>
+            </div>
+            <div id="actor-{{id}}" class="panel-collapse collapse {{#if @first}}in{{/if}}">
+                <div class="panel-body">
+                    <div class="actor-img" style="background-image:url('{{picture}}')"></div>
+                    <h3 class="hidden-xs hidden-sm">{{firstName}} {{lastName}}</h3>
+                    <p>{{bio}}</p>
+                </div>
+            </div>
+        </div>
+    {{/each}}
+    </script>
+    </body>
+</html>
